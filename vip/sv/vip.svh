@@ -11,7 +11,7 @@ typedef uvm_sequence #(uvm_sequence_item) uvm_virtual_sequence;
 class vip_base_seq_item extends uvm_sequence_item;
   
   // class members. Automation
-  rand logic [7:0] op_code;
+  rand bit [7:0] op_code;
   rand bit [7:0] address;
   rand bit [15:0] data;
   
