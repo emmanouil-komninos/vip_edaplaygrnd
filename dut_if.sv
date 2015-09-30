@@ -1,8 +1,8 @@
 interface design_if (input bit clk);
   	
   logic [7:0] op_code;
-  logic [15:0] address;
-  logic [31:0] data;
+  logic [7:0] address;
+  logic [15:0] data;
     
   clocking tb_ck @(posedge clk);
     output op_code;
