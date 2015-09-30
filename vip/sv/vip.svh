@@ -29,6 +29,52 @@ endclass
 
 
 
+// adapter class
+// adapter
+class vip_reg2channelbus_adapter extends uvm_reg_adapter;
+  
+  `uvm_object_utils(vip_reg2channelbus_adapter)
+  
+  function new (string name = "vip_reg2channelbus_adapter");
+    super.new(name);
+  endfunction
+
+  virtual function uvm_sequence_item reg2bus(
+    const ref uvm_reg_bus_op rw);
+    
+    vip_base_seq_item bus_item;
+    bus_item = vip_base_seq_item::type_id::create("bus_item");
+    
+    bus_item.address = rw.data[23:16];
+    bus_item.op_code = rw.data[31:24];
+    bus_item.data = rw.data[15:0];
+    
+    return (bus_item);    
+  endfunction
+  
+  virtual function void bus2reg(
+    uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
+    
+    vip_base_seq_item incoming_bus_item;
+    incoming_bus_item =
+    vip_base_seq_item::type_id::create("incoming_bus_item");
+
+    if(!$cast(incoming_bus_item, bus_item))
+      begin
+        `uvm_error(%sformatf("%s", this.get_name()), 
+                   "Expecting vip_base_seq_item type")
+        return;
+      end
+    
+    rw.data[23:16] = incoming_bus_item[23:16];
+    rw.data[31:24] = incoming_bus_item[31:24];
+    rw.data[15:0] = incoming_bus_item[15:0];
+    
+  endfunction
+endclass
+
+
+
 // sequence classes
 class vip_base_sequence extends uvm_sequence #(vip_base_seq_item);
   
@@ -253,7 +299,7 @@ class vip_env extends uvm_env;
   // all dropped with drain time
   task all_dropped (uvm_objection objection, uvm_object source_obj, 
                     string description, int count);
-    objection.print();
+
     if (objection == uvm_test_done)
       begin
         `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
