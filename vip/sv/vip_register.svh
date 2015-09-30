@@ -48,7 +48,8 @@ class vip_register_file_c extends uvm_reg_block;
   
   virtual function void build();
     // create, configure, build each register
-    ctrl_reg = ctrl_reg_c::type_id::create("ctrl_reg");
+    ctrl_reg = ctrl_reg_c::type_id::create("ctrl_reg", ,
+                                           get_full_name());
     
     // parent, reg_file parent, path
     ctrl_reg.configure(this, null, "ctrl");
@@ -70,13 +71,15 @@ class vip_reg_model_c extends uvm_reg_block;
   
   `uvm_object_utils(vip_reg_model_c)
   
-  function new( string name = "vip_register_model_c");
+  function new( string name = "vip_reg_model_c");
     super.new(name, UVM_NO_COVERAGE);
   endfunction
   
   virtual function void build();
+    
     // create, configure register file
-    vip_rf = vip_register_file_c::type_id::create("vip_rf");
+    vip_rf = vip_register_file_c::type_id::create("vip_rf", ,
+                                                  get_full_name());
     
     // parent, path
     vip_rf.configure(this, "regs");
@@ -87,7 +90,7 @@ class vip_reg_model_c extends uvm_reg_block;
     default_map = create_map("default_map", 
                              0, 4, UVM_LITTLE_ENDIAN, 0);
     
-    default_map.add_supmap(vip_rf.default_map, 0);
+    default_map.add_submap(vip_rf.default_map, 0);
     default_map.set_check_on_read();
     
     set_hdl_path_root("tb_top.dut");
