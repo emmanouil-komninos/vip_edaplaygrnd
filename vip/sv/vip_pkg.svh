@@ -60,7 +60,9 @@ package vip_test_pkg;
 	import uvm_pkg::*;
 	`include "uvm_macros.svh"
 	import vip_pkg::*;
-
+	`include "vip_register.svh"
+	`include "vip_module.svh"
+	
 	import vip_vseq_pakcage::*;
 	`include "vip_test.svh"
 endpackage
