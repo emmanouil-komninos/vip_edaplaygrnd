@@ -1,16 +1,16 @@
-// dut register models
-class ctrl_reg extends uvm_reg;
+// register definition
+class ctrl_reg_c extends uvm_reg;
   
   rand uvm_reg_field address;
   rand uvm_reg_field op_code;
   rand uvm_reg_field data;
  
-  `uvm_register_cb(ctrl_reg, uvm_reg_cbs)
-  `uvm_set_super_type(ctrl_reg, uvm_reg)
+  `uvm_register_cb(ctrl_reg_c, uvm_reg_cbs)
+  `uvm_set_super_type(ctrl_reg_c, uvm_reg)
   
-  `uvm_object_utils(ctrl_reg)
+  `uvm_object_utils(ctrl_reg_c)
   
-  function new (string name = "unnamed-ctrl_reg" );
+  function new (string name = "unnamed-ctrl_reg_c" );
     // covareg is selected from uvm_coverage_model_e
     super.new(name, 32, build_coverage(UVM_CVR_FIELD_VALS));
   endfunction
@@ -32,3 +32,33 @@ class ctrl_reg extends uvm_reg;
   endfunction
   
 endclass
+
+
+// register file definition
+class vip_rf_c extends uvm_reg_block;
+  
+  // register members
+  rand ctrl_reg_c ctrl_reg;
+  
+  `uvm_object_utils(vip_rf_c)
+  
+  function new (string name = "vip_rf_c");
+    super.new(name, UVM_NO_COVERAGE);
+  endfunction
+  
+  virtual function build();
+    // create, configure, build each register
+    ctrl_reg = ctrl_reg_c::type_id::create("ctrl_reg");
+    ctrl_reg.configure(this, null, "ctrl");
+    ctrl_reg.build();
+    
+    // define address mappings
+    default_map = create_map("default_map", 
+                             0, 4, UVM_LITTLE_ENDIAN, 0);
+    default_map.add_reg(ctrl_reg, 0, "RW"); // 0 offset from base
+  endfunction
+    
+endclass
+
+
+// register model definition
