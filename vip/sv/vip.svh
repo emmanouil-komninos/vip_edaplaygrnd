@@ -13,7 +13,7 @@ class vip_base_seq_item extends uvm_sequence_item;
   // class members. Automation
   rand logic [7:0] op_code;
   rand bit [7:0] address;
-  rand bit [31:0] data;
+  rand bit [15:0] data;
   
   `uvm_object_utils_begin(vip_base_seq_item)
   `uvm_field_int(op_code, UVM_DEFAULT)
