@@ -61,14 +61,14 @@ class vip_reg2channelbus_adapter extends uvm_reg_adapter;
 
     if(!$cast(incoming_bus_item, bus_item))
       begin
-        `uvm_error($sformatf("%s", this.get_name()), 
+        `uvm_error($sformatf("%s", this.get_name()),
                    "Expecting vip_base_seq_item type")
         return;
       end
     
-    rw.data[23:16] = incoming_bus_item[23:16];
-    rw.data[31:24] = incoming_bus_item[31:24];
-    rw.data[15:0] = incoming_bus_item[15:0];
+    rw.data[23:16] = incoming_bus_item.address;
+    rw.data[31:24] = incoming_bus_item.op_code;
+    rw.data[15:0] = incoming_bus_item.data;
     
   endfunction
 endclass
