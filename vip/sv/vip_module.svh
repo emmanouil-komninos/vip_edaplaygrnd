@@ -1,9 +1,6 @@
 // register sequences
 
 
-// predictor
-
-
 // module uvc
 class vip_module_uvc extends uvm_env;
   
@@ -40,7 +37,7 @@ endclass
 
     function void vip_module_uvc::connect_phase(uvm_phase phase);
       super.connect_phase(phase);
-      // connect adapter  and register map to predictor
+      // connect adapter and register map to predictor
       cbus_predictor.map = vip_reg_model.default_map;
       cbus_predictor.adapter = reg2cbus;
     endfunction
