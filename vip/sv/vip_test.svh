@@ -158,8 +158,10 @@ class vseq_simple_test extends vip_base_test;
     // call the following to enable starting_phase.raise/drop_objection(..)
     vseq.set_starting_phase(phase); // uvm-1.2
 
-    // start the vseq on null sequencer
-    vseq.start(tb.vseqr);
+    // start the vseq
+    // explicit de activation of calls to task pre/post body
+    // vseq.start(tb.vseqr, null, -1, 0);
+    vseq.start(tb.vseqr);    
     
     //#20 phase.drop_objection(this, "test is dropping the objection");
     
