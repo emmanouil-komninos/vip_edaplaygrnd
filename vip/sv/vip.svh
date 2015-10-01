@@ -30,12 +30,11 @@ endclass
 
 
 // adapter class
-// adapter
-class vip_reg2channelbus_adapter extends uvm_reg_adapter;
+class vip_reg2cbus_adapter extends uvm_reg_adapter;
   
-  `uvm_object_utils(vip_reg2channelbus_adapter)
+  `uvm_object_utils(vip_reg2cbus_adapter)
   
-  function new (string name = "vip_reg2channelbus_adapter");
+  function new (string name = "vip_reg2cbus_adapter");
     super.new(name);
   endfunction
 
@@ -85,7 +84,7 @@ class vip_base_sequence extends uvm_sequence #(vip_base_seq_item);
   endfunction
   
   virtual task body();
-    repeat(10)
+    repeat(1)
       begin
         `uvm_do_with(req, {req.op_code inside {[1:2]};})  
       end
@@ -111,23 +110,6 @@ class vip_sequencer extends uvm_sequencer #(vip_base_seq_item);
   endfunction
   
 endclass
-
-
-
-// virtual sequencer
-class vip_base_vseqr extends uvm_virtual_sequencer;
-  
-  `uvm_component_utils(vip_base_vseqr)
-  
-  // sequencer handles
-  vip_sequencer _seqr;
-  
-  function new (string name = "vip_base_vseqr", uvm_component parent);
-    super.new(name, parent);
-  endfunction
-
-endclass
-
 
 
 // driver class
@@ -265,7 +247,6 @@ class vip_agent extends uvm_agent;
 endclass
 
 
-
 // env class
 class vip_env extends uvm_env;
   
@@ -315,6 +296,4 @@ class vip_env extends uvm_env;
   endtask
   
 endclass
-
-
 `endif
