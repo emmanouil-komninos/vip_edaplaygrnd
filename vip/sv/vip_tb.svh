@@ -44,7 +44,7 @@ class base_vseq extends uvm_virtual_sequence;
     uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
     if (starting_phase != null)
       begin
-        //starting_phase.drop_objection(this, "Completed vseq");
+        starting_phase.drop_objection(this, "Completed vseq");
       end
   endtask
   
