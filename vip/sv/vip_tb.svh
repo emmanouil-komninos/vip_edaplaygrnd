@@ -27,8 +27,7 @@ class base_vseq extends uvm_virtual_sequence;
   virtual task pre_body();
   	// for the following to take effect the (base_vseq 1_seq) 
     // 1_seq.set_starting_phase() should be called 
-    // prior to 1_seq.start(..) 
-    
+    // prior to 1_seq.start(..)    
     uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
     if (starting_phase != null)
       begin
