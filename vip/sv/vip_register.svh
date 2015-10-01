@@ -98,5 +98,4 @@ class vip_reg_model_c extends uvm_reg_block;
     
   endfunction
   
-endclass
-  
+endclass  
