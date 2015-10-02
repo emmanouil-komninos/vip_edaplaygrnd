@@ -15,13 +15,14 @@ module tb_top;
   
   initial
     begin
-      uvm_config_db#(vip_pkg::vip_vif)::set(null,"uvm_test_top",
+      uvm_config_db#(vip_pkg::vip_vif)::set(null,"*",
                                       "vip_vif",dut_if);       
     end
 
   initial
     begin
-      run_test("simple_vseq_test");
+      run_test("vseq_simple_test");
+      //run_test("simple_test");
     end
   
   initial
@@ -33,8 +34,7 @@ module tb_top;
     begin
       // Dump waves
       $dumpfile("dump.vcd");
-      $dumpvars(1, tb_top);
-      $dumpvars(2, dut);
+      $dumpvars(1);
     end
   
 endmodule  
