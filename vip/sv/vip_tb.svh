@@ -31,8 +31,7 @@ class base_vseq extends uvm_virtual_sequence;
     uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
     if (starting_phase != null)
       begin
-        starting_phase.raise_objection(
-          this, "Started vseq");
+        starting_phase.raise_objection(this, "Started vseq");
       end
   endtask
   
@@ -56,15 +55,17 @@ class vip_tb extends uvm_env;
     
   `uvm_component_utils(vip_tb)
 
-  // protected virtual if or if proxy. No automation
+  // Protected virtual if or if proxy. No automation
   vip_vif vif;
   
-  // virtual sequencer
+  // Virtual sequencer
   base_vseqr vseqr;
   
-  // tb's components. No automation
-  vip_env env;
-
+  // TB's components. No automation
+  vip_env env; // IF UVC
+  vip_module_uvc mod_uvc; // Module UVC
+  vip_reg_model_c reg_model; // DUT Register model
+  
   // constructor
   function new (string name, uvm_component parent);
     super.new(name, parent);
@@ -77,10 +78,32 @@ class vip_tb extends uvm_env;
     check_vip_vif();
     uvm_config_db#(vip_vif)::set(this,"*","vip_vif", vif);
     
+    // IF UVCs
     env = vip_env::type_id::create("env", this);
     
+    // Module UVC
+    mod_uvc = vip_module_uvc::type_id::create("mod_uvc", this);
+    
+    // Virtual sequencer
     vseqr = base_vseqr::type_id::create("vseqr", this);
     
+    // Register model
+    if (reg_model == null)
+      begin
+        uvm_reg::include_coverage("*", UVM_CVR_ALL);
+        reg_model = vip_reg_model_c::type_id::create("reg_model");
+        reg_model.build(); // Not build_phase -> reg model is an object
+        reg_model.lock_model();
+      end
+    
+    // set the reg_model for the rest of the TB
+    
+    // The following breaks auto_config and explicit get is needed
+    //uvm_config_db#(vip_reg_model_c)::set(this, "*", "reg_model", reg_model);
+    
+    // The following allows for auto_config
+    uvm_config_object::set(this, "*", "reg_model", reg_model);
+  
   endfunction
   
   virtual function void connect_phase(uvm_phase phase);
