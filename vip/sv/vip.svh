@@ -149,42 +149,59 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   // run phase
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    
     forever
       begin
-        seq_item_port.get_next_item(req);        
-        
-        if (req == null)
+        reset();
+        fork
+          @(negedge vif.reset) `uvm_info($sformatf("%s", this.get_name()), 
+                    "Negedge of reset received", UVM_LOW)
           begin
-            `uvm_fatal($sformatf("%s", this.get_name()), "req is null")    
+            forever
+              begin           
+                @(this.vif.vip_tb_mod.tb_ck iff(vif.reset));
+                
+                `uvm_info($sformatf("%s", this.get_name()), 
+                          "Getting next item", UVM_LOW)
+                seq_item_port.get_next_item(req);
+                `uvm_info($sformatf("%s", this.get_name()), 
+                          "New request received on driver", UVM_LOW)
+                phase.raise_objection(
+                  this, $sformatf("%s, %s objection: raised", 
+                                  this.get_name(), phase.get_name()));
+                get_and_drive();
+                seq_item_port.item_done();                
+                phase.drop_objection(
+                  this, $sformatf("%s, %s objection: dropped", 
+                                  this.get_name(), phase.get_name()));
+              end
           end
-        
-        phase.raise_objection(
-          this, $sformatf("%s, %s objection: raised", 
-                          this.get_name(), phase.get_name()));
-        `uvm_info($sformatf("%s", this.get_name()), 
-                  $sformatf("get_objection_count=%0d", 
-                            phase.get_objection_count(this)), UVM_LOW)
-        
-        get_and_drive();
-        seq_item_port.item_done();
-        
-        phase.drop_objection(
-          this, $sformatf("%s, %s objection: dropped", 
-                          this.get_name(), phase.get_name()));
-        
+        join_any
+        disable fork;
+          if (req!= null)
+            begin
+              `uvm_info($sformatf("%s", this.get_name()), 
+                    "Request is not null", UVM_LOW)              
+            end
       end
   endtask
         
   
   // virtual functions to drive pins
   virtual task get_and_drive();
+    `uvm_info($sformatf("%s", this.get_name()), "in get_and_drive", UVM_LOW)
     this.vif.vip_tb_mod.tb_ck.op_code <= req.op_code;
     this.vif.vip_tb_mod.tb_ck.data <= req.data;
     this.vif.vip_tb_mod.tb_ck.address <= req.address;
-    @this.vif.vip_tb_mod.tb_ck;
   endtask
   
-  
+  virtual task reset();
+    wait(this.vif.reset)
+    `uvm_info($sformatf("%s", this.get_name()), "in reset", UVM_LOW)
+    this.vif.vip_tb_mod.tb_ck.op_code <= 'hff;
+    this.vif.vip_tb_mod.tb_ck.data <= 'hffff;
+    this.vif.vip_tb_mod.tb_ck.address <= 'hff;    
+  endtask
 endclass
 
 
@@ -197,8 +214,7 @@ class vip_agent extends uvm_agent;
   
   // macro for factory registeration and automation
   // of class members
-  `uvm_component_utils(vip_agent)
-  
+  `uvm_component_utils(vip_agent)  
   
   // agent's components. No automation
   vip_driver driver;
