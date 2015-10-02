@@ -10,7 +10,7 @@ module tb_top;
   reg clk = 0;
   reg reset;
 
-  design_if dut_if(clk);
+  design_if dut_if(clk, reset);
   _design dut(._if(dut_if)); 
   
   initial
@@ -27,6 +27,12 @@ module tb_top;
   
   initial
     begin
+      reset = 1;
+      #100 reset = ~reset;
+    end
+  
+  initial
+    begin
       forever #10 clk = ~clk;
     end
   
@@ -34,7 +40,7 @@ module tb_top;
     begin
       // Dump waves
       $dumpfile("dump.vcd");
-      $dumpvars(1);
+      $dumpvars(1, tb_top);
     end
   
 endmodule  
