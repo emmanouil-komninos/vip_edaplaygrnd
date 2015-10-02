@@ -30,11 +30,11 @@ endclass
 
 
 // adapter class
-class vip_reg2cbus_adapter extends uvm_reg_adapter;
+class vip_reg_cbus_adapter extends uvm_reg_adapter;
   
-  `uvm_object_utils(vip_reg2cbus_adapter)
+  `uvm_object_utils(vip_reg_cbus_adapter)
   
-  function new (string name = "vip_reg2cbus_adapter");
+  function new (string name = "vip_reg_cbus_adapter");
     super.new(name);
   endfunction
 
@@ -105,7 +105,7 @@ class vip_sequencer extends uvm_sequencer #(vip_base_seq_item);
   // of class members
   `uvm_component_utils(vip_sequencer)  
   
-  function new (string name, uvm_component parent);
+  function new (string name = "vip_sequencer", uvm_component parent);
     super.new(name, parent);
   endfunction
   
@@ -151,19 +151,16 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
     super.run_phase(phase);
     forever
       begin
-        seq_item_port.get_next_item(req);
-        
+        seq_item_port.get_next_item(req);        
         
         if (req == null)
           begin
             `uvm_fatal($sformatf("%s", this.get_name()), "req is null")    
           end
-        else
-          req.print();
         
         phase.raise_objection(
-          this, $sformatf("%s, %s objection: ", 
-                          this.get_name(), phase.get_name(), "raised"));
+          this, $sformatf("%s, %s objection: raised", 
+                          this.get_name(), phase.get_name()));
         `uvm_info($sformatf("%s", this.get_name()), 
                   $sformatf("get_objection_count=%0d", 
                             phase.get_objection_count(this)), UVM_LOW)
@@ -172,8 +169,8 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
         seq_item_port.item_done();
         
         phase.drop_objection(
-          this, $sformatf("%s, %s objection: ", 
-                          this.get_name(), phase.get_name(), "dropped"));
+          this, $sformatf("%s, %s objection: dropped", 
+                          this.get_name(), phase.get_name()));
         
       end
   endtask
@@ -291,7 +288,7 @@ class vip_env extends uvm_env;
         `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
                   $sformatf("get_objection_total=%0d", 
                             objection.get_objection_total), UVM_LOW) 
-        //repeat(15);
+        repeat(15);
       end
   endtask
   
