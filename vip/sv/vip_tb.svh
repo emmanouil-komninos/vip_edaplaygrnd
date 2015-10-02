@@ -109,14 +109,43 @@ class vip_tb extends uvm_env;
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     
-    // initialize the sequencer handles
+    // initialize the sequencer handles in virtual sequencer
     vseqr.seqr = this.env.agent.seqr;
+    
+    // set register model's sequencer and adapter
+    // must be done prior to using any sequence based on uvm_reg_sequencer
+    reg_model.default_map.set_sequencer(env.agent.seqr, mod_uvc.reg_cbus);
+    
+    //connect bus monitor to module uvc predictor.bus_in    
     
   endfunction
   
+  virtual task run_phase(uvm_phase phase);
+    fork
+      super.run_phase(phase);
+      reset_reg_model();
+    join
+  endtask
+  
+  extern task reset_reg_model();
   extern function void check_vip_vif();
     
 endclass
+    
+    task vip_tb::reset_reg_model();
+    	
+      //forever
+        //begin
+          // wait for top reset to become high
+          //wait()
+      `uvm_info($sformatf(
+        "%s", this.get_name()), 
+                "Resetting the register model", UVM_LOW)
+      reg_model.reset();
+      reg_model.vip_rf.print();
+        //end
+      
+    endtask
     
     function void vip_tb::check_vip_vif();
       
