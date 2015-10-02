@@ -21,13 +21,13 @@ class ctrl_reg_c extends uvm_reg;
     // create + configure for each uvm_reg_field
     
     address = uvm_reg_field::type_id::create("address");
-    address.configure(this, 8, 0, "RW", 0, 0, 1, 1, 1);
+    address.configure(this, 8, 0, "RW", 0, 'hff, 1, 1, 1);
     
     op_code = uvm_reg_field::type_id::create("op_code");
-    op_code.configure(this, 8, 8, "RW", 0, 0, 1, 1, 1);
+    op_code.configure(this, 8, 8, "RW", 0, 'hff, 1, 1, 1);
     
     data = uvm_reg_field::type_id::create("data");
-    data.configure(this, 16, 16, "RW", 0, 0, 1, 1, 1);
+    data.configure(this, 16, 16, "RW", 0, 'hffff, 1, 1, 1);
     
   endfunction
   
@@ -82,7 +82,7 @@ class vip_reg_model_c extends uvm_reg_block;
       "vip_rf", , get_full_name());
     
     // parent, path
-    vip_rf.configure(this, "regs");
+    vip_rf.configure(this, "");
     vip_rf.build();
     vip_rf.lock_model();
     
