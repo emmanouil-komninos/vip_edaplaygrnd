@@ -11,7 +11,7 @@ class ctrl_reg_c extends uvm_reg;
   `uvm_object_utils(ctrl_reg_c)
   
   function new (string name = "unnamed-ctrl_reg_c" );
-    // covareg is selected from uvm_coverage_model_e
+    // coverage is selected from uvm_coverage_model_e
     super.new(name, 32, build_coverage(UVM_CVR_FIELD_VALS));
   endfunction
   
@@ -24,10 +24,10 @@ class ctrl_reg_c extends uvm_reg;
     address.configure(this, 8, 0, "RW", 0, 0, 1, 1, 1);
     
     op_code = uvm_reg_field::type_id::create("op_code");
-    op_code.configure(this, 8, 0, "RW", 0, 0, 1, 1, 1);
+    op_code.configure(this, 8, 8, "RW", 0, 0, 1, 1, 1);
     
     data = uvm_reg_field::type_id::create("data");
-    data.configure(this, 16, 0, "RW", 0, 0, 1, 1, 1);
+    data.configure(this, 16, 16, "RW", 0, 0, 1, 1, 1);
     
   endfunction
   
@@ -48,8 +48,8 @@ class vip_register_file_c extends uvm_reg_block;
   
   virtual function void build();
     // create, configure, build each register
-    ctrl_reg = ctrl_reg_c::type_id::create("ctrl_reg", ,
-                                           get_full_name());
+    ctrl_reg = ctrl_reg_c::type_id::create(
+      "ctrl_reg", , get_full_name());
     
     // parent, reg_file parent, path
     ctrl_reg.configure(this, null, "ctrl");
@@ -67,7 +67,7 @@ endclass
 // register model definition
 class vip_reg_model_c extends uvm_reg_block;
   
-  vip_register_file_c vip_rf;
+  rand vip_register_file_c vip_rf;
   
   `uvm_object_utils(vip_reg_model_c)
   
@@ -76,10 +76,10 @@ class vip_reg_model_c extends uvm_reg_block;
   endfunction
   
   virtual function void build();
-    
+        
     // create, configure register file
-    vip_rf = vip_register_file_c::type_id::create("vip_rf", ,
-                                                  get_full_name());
+    vip_rf = vip_register_file_c::type_id::create(
+      "vip_rf", , get_full_name());
     
     // parent, path
     vip_rf.configure(this, "regs");
@@ -87,14 +87,13 @@ class vip_reg_model_c extends uvm_reg_block;
     vip_rf.lock_model();
     
     // define register file address mappings
-    default_map = create_map("default_map", 
-                             0, 4, UVM_LITTLE_ENDIAN, 0);
+    default_map = create_map(
+      "default_map", 0, 4, UVM_LITTLE_ENDIAN, 0);
     
     default_map.add_submap(vip_rf.default_map, 0);
-    default_map.set_check_on_read();
-    
     set_hdl_path_root("tb_top.dut");
     this.lock_model();
+    default_map.set_check_on_read();
     
   endfunction
   
