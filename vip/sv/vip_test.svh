@@ -156,7 +156,7 @@ class vseq_simple_test extends vip_base_test;
     vseq = vseq_simple::type_id::create("vseq");
     
     // call the following to enable starting_phase.raise/drop_objection(..)
-    vseq.set_starting_phase(phase); // uvm-1.2
+    //vseq.set_starting_phase(phase); // uvm-1.2
 
     // start the vseq
     // explicit de activation of calls to task pre/post body
