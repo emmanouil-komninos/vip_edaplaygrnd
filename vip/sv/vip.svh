@@ -1,7 +1,3 @@
-`ifndef VIP__SVH
-`define VIP__SVH
-
-
 // typedef of virtual sequence
 typedef uvm_sequence #(uvm_sequence_item) uvm_virtual_sequence;
 
@@ -74,7 +70,7 @@ endclass
 
 
 
-// sequence classes
+// base sequence class
 class vip_base_sequence extends uvm_sequence #(vip_base_seq_item);
   
   `uvm_object_utils(vip_base_sequence)
@@ -83,13 +79,6 @@ class vip_base_sequence extends uvm_sequence #(vip_base_seq_item);
     super.new(name);
   endfunction
   
-  virtual task body();
-    repeat(1)
-      begin
-        `uvm_do_with(req, {req.op_code inside {[1:2]};})  
-      end
-  endtask
-
 endclass
 
 
@@ -309,4 +298,3 @@ class vip_env extends uvm_env;
   endtask
   
 endclass
-`endif
