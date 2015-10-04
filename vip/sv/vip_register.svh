@@ -97,4 +97,34 @@ class vip_reg_model_c extends uvm_reg_block;
     
   endfunction
   
-endclass  
+endclass
+
+// base register sequence: gets the reg_model, raise/drop objection
+class base_reg_seq extends uvm_sequence;
+  
+  vip_reg_model_c reg_model;
+  
+  `uvm_object_utils(base_reg_seq)
+  
+  function new (string name = "base_reg_seq");
+    super.new(name);
+  endfunction
+  
+  // simplified
+  virtual function void get_model();
+    uvm_object tmp_object;
+    // this -> wrong... we are in a sequence! 
+    //To access config_db we need to access the sequncer
+    //if (uvm_config_db#(uvm_object)::get(this, "", "reg_model", tmp_object))
+    if (uvm_config_db#(uvm_object)::get(
+      get_sequencer(), "", "reg_model", tmp_object))
+      begin
+        $cast(reg_model, tmp_object);
+      end
+  endfunction
+  
+  virtual task pre_start();
+    get_model();
+  endtask
+  
+endclass
