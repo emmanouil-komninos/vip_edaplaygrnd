@@ -145,6 +145,14 @@ class vseq_simple_test extends vip_base_test;
   endfunction
   
   // build phase
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    //vip_base_sequence::type_id::set_type_override(
+      //vip_simple_sequence::get_type());
+    set_type_override_by_type(vip_base_sequence::get_type(), 
+                            vip_simple_sequence::get_type());
+  endfunction
+  
   // end of elaboration
   
   // run phase
@@ -159,7 +167,7 @@ class vseq_simple_test extends vip_base_test;
     vseq.set_starting_phase(phase); // uvm-1.2
 
     // start the vseq
-    // explicit de activation of calls to task pre/post body
+    // explicit de-activation of calls to task pre/post body
     // vseq.start(tb.vseqr, null, -1, 0);
     vseq.start(tb.vseqr);    
     
