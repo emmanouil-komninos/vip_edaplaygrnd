@@ -19,5 +19,6 @@ package vip_test_pkg;
 	`include "vip_register.svh"
 	`include "vip_module.svh"
 	`include "vip_tb.svh"
+	`include "vip_seq_lib.svh"
 	`include "vip_test.svh"
 endpackage
