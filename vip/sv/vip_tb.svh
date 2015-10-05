@@ -45,7 +45,7 @@ class base_vseq extends uvm_virtual_sequence;
         starting_phase.drop_objection(this, "Completed vseq");
       end
   endtask
-  
+   
 endclass
 
 
@@ -124,7 +124,7 @@ class vip_tb extends uvm_env;
     fork
       super.run_phase(phase);
       reset_reg_model();
-    join
+    join_none
   endtask
   
   extern task reset_reg_model();
@@ -134,16 +134,16 @@ endclass
     
     task vip_tb::reset_reg_model();
     	
-      //forever
-        //begin
-          // wait for top reset to become high
-          //wait()
-      `uvm_info($sformatf(
-        "%s", this.get_name()), 
-                "Resetting the register model", UVM_LOW)
-      reg_model.reset();
-      reg_model.vip_rf.print();
-        //end
+      forever
+        begin
+          //wait for top reset to become high
+          wait(vif.reset);
+          `uvm_info($sformatf(
+            "%s", this.get_name()), 
+                    "Resetting the register model", UVM_LOW)
+          reg_model.reset();
+          reg_model.vip_rf.print();
+        end
       
     endtask
     
