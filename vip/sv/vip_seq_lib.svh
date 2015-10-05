@@ -16,3 +16,19 @@ class vip_simple_sequence extends vip_base_sequence;
   endtask
 
 endclass
+
+// register sequence
+class vip_simple_reg_seq extends base_reg_seq;
+  
+  `uvm_object_utils(vip_simple_reg_seq)
+  
+  function new (string name = "vip_simple_reg_seq");
+    super.new(name);
+  endfunction
+  
+  virtual task body();
+    uvm_status_e status;
+    `uvm_info("VIP_SIMPLE_REG_SEQ", "Running", UVM_LOW)
+    reg_model.vip_rf.ctrl_reg.write(status, 'h12345);
+  endtask
+endclass
