@@ -143,12 +143,12 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
       begin
         reset();
         fork
-          @(negedge vif.reset) `uvm_info($sformatf("%s", this.get_name()), 
-                    "Negedge of reset received", UVM_LOW)
+          @(posedge vif.reset) `uvm_info($sformatf("%s", this.get_name()), 
+                    "Posedge of reset received", UVM_LOW)
           begin
             forever
               begin           
-                @(this.vif.vip_tb_mod.tb_ck iff(vif.reset));
+                @(this.vif.vip_tb_mod.tb_ck iff(!vif.reset));
                 
                 `uvm_info($sformatf("%s", this.get_name()), 
                           "Getting next item", UVM_LOW)
