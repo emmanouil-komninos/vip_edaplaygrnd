@@ -127,4 +127,26 @@ class base_reg_seq extends uvm_sequence;
     get_model();
   endtask
   
+  virtual task pre_body();
+  	// for the following to take effect the (base_vseq 1_seq) 
+    // 1_seq.set_starting_phase() should be called 
+    // prior to 1_seq.start(..)    
+    uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
+    if (starting_phase != null)
+      begin
+        starting_phase.raise_objection(this, "Started vseq");
+      end
+  endtask
+  
+  virtual task post_body();
+  	// for the following to take effect the (base_vseq 1_seq) 
+    // 1_seq.set_starting_phase() should be called 
+    // prior to 1_seq.start(..) 
+    uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
+    if (starting_phase != null)
+      begin
+        starting_phase.drop_objection(this, "Completed vseq");
+      end
+  endtask
+  
 endclass
