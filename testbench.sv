@@ -9,14 +9,14 @@ module tb_top;
   
   reg clk = 0;
   reg reset;
-
+  
   design_if dut_if(clk, reset);
-  _design dut(._if(dut_if)); 
+  my_design dut(._if(dut_if)); 
   
   initial
     begin
-      uvm_config_db#(vip_pkg::vip_vif)::set(null,"*",
-                                      "vip_vif",dut_if);       
+      uvm_config_db#(vip_pkg::vip_vif)::set(null,"*.tb",
+                                      "vip_vif", dut_if);       
     end
 
   initial
@@ -41,6 +41,8 @@ module tb_top;
       // Dump waves
       $dumpfile("dump.vcd");
       $dumpvars(1, tb_top);
+      
+      $dumpvars(1, tb_top.dut);
     end
   
 endmodule  
