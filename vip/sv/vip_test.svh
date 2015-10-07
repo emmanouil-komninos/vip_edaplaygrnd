@@ -24,6 +24,7 @@ class vip_base_test extends uvm_test;
   // end of elaboration
   virtual function void end_of_elaboration();
     print();
+    //tb.reg_model.set_hdl_path_root("$root.tb_top.dut");
   endfunction
   
   // all dropped with drain time
@@ -43,7 +44,7 @@ class vip_base_test extends uvm_test;
                   $sformatf("get_objection_total=%0d",
                             objection.get_objection_total), 
                   UVM_LOW)
-        repeat(15) @(this.tb.vif.vip_tb_mod.tb_ck);
+        repeat(15) @(this.tb.env.m_config.vif.vip_tb_mod.tb_ck);
       end
   endtask
     
@@ -79,13 +80,13 @@ class simple_test extends vip_base_test;
   
   // run phase
   virtual task run_phase(uvm_phase phase);
-    `uvm_info($sformatf("%s", this.get_name()), 
-              $sformatf("get_objection_count=%0d", 
-                        phase.get_objection_count(this)), UVM_LOW) 
+    //`uvm_info($sformatf("%s", this.get_name()), 
+              //$sformatf("get_objection_count=%0d", 
+                        //phase.get_objection_count(this)), UVM_LOW) 
     phase.raise_objection(this, "test is raising an ojection");
-    `uvm_info($sformatf("%s", this.get_name()), 
-              $sformatf("get_objection_count=%0d", 
-                        phase.get_objection_count(this)), UVM_LOW)
+    //`uvm_info($sformatf("%s", this.get_name()), 
+              //$sformatf("get_objection_count=%0d", 
+                        //phase.get_objection_count(this)), UVM_LOW)
     
     // find the sequencer
     //uvm_component seqr;
@@ -99,22 +100,22 @@ class simple_test extends vip_base_test;
     base_sequence.start(tb.env.agent.seqr);
     
     #20 phase.drop_objection(this, "test is dropping the objection");
-    `uvm_info($sformatf("%s", this.get_name()), 
-              $sformatf("get_objection_count=%0d", 
-                        phase.get_objection_count(this)), UVM_LOW) 
+    //`uvm_info($sformatf("%s", this.get_name()), 
+              //$sformatf("get_objection_count=%0d", 
+                        //phase.get_objection_count(this)), UVM_LOW) 
   endtask
   
 endclass
 
 
 // test virtual sequence
-class vseq_simple extends base_vseq;
+class simple_vseq extends base_vseq;
   
-  `uvm_object_utils(vseq_simple)
+  `uvm_object_utils(simple_vseq)
   
   vip_base_sequence req;
   
-  function new (string name = "vseq_simple");
+  function new (string name = "simple_vseq");
     super.new(name);
   endfunction 
     
@@ -125,12 +126,29 @@ class vseq_simple extends base_vseq;
   
 endclass
 
+// test virtual sequence with reg seq
+class simple_reg_vseq extends base_vseq;
+  
+  `uvm_object_utils(simple_reg_vseq)
+  
+  vip_simple_reg_seq reg_req;
+  
+  function new (string name = "simple_reg_vseq");
+    super.new(name);
+  endfunction 
+    
+  task body();
+    reg_req = vip_simple_reg_seq::type_id::create("reg_req");   
+    `uvm_do_on(reg_req, p_sequencer.seqr)    
+  endtask
+  
+endclass
 
 class vseq_simple_test extends vip_base_test;
   
   // configuation. Automation
   // class members. Automation
-  vseq_simple vseq;
+  base_vseq vseq;
   
   // macro for factory registeration and automation
   // of class members
@@ -151,6 +169,13 @@ class vseq_simple_test extends vip_base_test;
       //vip_simple_sequence::get_type());
     set_type_override_by_type(vip_base_sequence::get_type(), 
                             vip_simple_sequence::get_type());
+    // run the simple_vseq
+    //set_type_override_by_type(base_vseq::get_type(), 
+                              //simple_vseq::get_type());
+    // run the simple_reg_vseq
+    set_type_override_by_type(base_vseq::get_type(), 
+                              simple_reg_vseq::get_type());
+    
   endfunction
   
   // end of elaboration
@@ -161,7 +186,7 @@ class vseq_simple_test extends vip_base_test;
     //phase.raise_objection(this, "test is raising an ojection");
      
     // create the vsequence.
-    vseq = vseq_simple::type_id::create("vseq");
+    vseq = base_vseq::type_id::create("vseq");
     
     // call the following to enable starting_phase.raise/drop_objection(..)
     vseq.set_starting_phase(phase); // uvm-1.2
