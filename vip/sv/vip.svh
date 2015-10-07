@@ -85,6 +85,19 @@ endclass
 
 // configuration classes
 
+class vip_agent_config extends uvm_object;
+  vip_vif vif;
+  function new (string name = "vip_agent_config");
+    super.new(name);
+  endfunction
+endclass
+
+class vip_env_config extends uvm_object;
+  vip_vif vif;
+  function new (string name = "vip_env_config");
+    super.new(name);
+  endfunction
+endclass
 
 
 // sequencer class
@@ -112,8 +125,8 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   // of class members
   `uvm_component_utils(vip_driver)
   
-  // protected virtual if (or proxy)
-  protected vip_vif vif;
+  // virtual if (or proxy)
+  vip_vif vif;
   
   // analysis port for misc components
   
@@ -126,9 +139,8 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   
   // connect phase
   function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);          
-    
-    if(!uvm_config_db#(vip_vif)::get(null,get_full_name(),"vip_vif", vif))
+    super.connect_phase(phase);
+    if(!uvm_config_db#(vip_vif)::get(null,get_full_name(),"vif", vif))
       begin
         `uvm_error($sformatf("%s: connect_phase", this.get_name()),
                    "vip_vif get from config_db failed")
@@ -138,7 +150,10 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   // run phase
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    
+    if (vif == null)
+      begin
+        `uvm_fatal($sformatf("%s", this.get_name()), "Null virtual interface")
+      end
     forever
       begin
         reset();
@@ -148,13 +163,18 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
           begin
             forever
               begin           
-                @(this.vif.vip_tb_mod.tb_ck iff(!vif.reset));
+                @(this.vif.vip_tb_mod.tb_ck iff(!this.vif.reset));
                 
                 `uvm_info($sformatf("%s", this.get_name()), 
-                          "Getting next item", UVM_LOW)
+                          "Waiting for next item", UVM_LOW)
+                
+                this.vif.vip_tb_mod.tb_ck.enable <= 0;
+                
                 seq_item_port.get_next_item(req);
+                
                 `uvm_info($sformatf("%s", this.get_name()), 
                           "New request received on driver", UVM_LOW)
+                
                 phase.raise_objection(
                   this, $sformatf("%s, %s objection: raised", 
                                   this.get_name(), phase.get_name()));
@@ -178,7 +198,8 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   
   // virtual functions to drive pins
   virtual task get_and_drive();
-    `uvm_info($sformatf("%s", this.get_name()), "in get_and_drive", UVM_LOW)
+    `uvm_info($sformatf("%s",this.get_name()), "in get_and_drive", UVM_LOW)
+    this.vif.vip_tb_mod.tb_ck.enable <= 1;
     this.vif.vip_tb_mod.tb_ck.op_code <= req.op_code;
     this.vif.vip_tb_mod.tb_ck.data <= req.data;
     this.vif.vip_tb_mod.tb_ck.address <= req.address;
@@ -186,10 +207,10 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   
   virtual task reset();
     wait(this.vif.reset)
-    `uvm_info($sformatf("%s", this.get_name()), "in reset", UVM_LOW)
+    `uvm_info($sformatf("%s",this.get_name()), "in reset", UVM_LOW)
     this.vif.vip_tb_mod.tb_ck.op_code <= 'hff;
     this.vif.vip_tb_mod.tb_ck.data <= 'hffff;
-    this.vif.vip_tb_mod.tb_ck.address <= 'hff;    
+    this.vif.vip_tb_mod.tb_ck.address <= 'hff;
   endtask
 endclass
 
@@ -198,12 +219,13 @@ endclass
 
 // agent class
 class vip_agent extends uvm_agent;
-  
-  // configuration. Automation
-  
+
   // macro for factory registeration and automation
   // of class members
   `uvm_component_utils(vip_agent)  
+  
+  // configuration. No automation
+  vip_agent_config m_config;
   
   // agent's components. No automation
   vip_driver driver;
@@ -222,20 +244,18 @@ class vip_agent extends uvm_agent;
     `uvm_info($sformatf("%s: build_phase", this.get_name()),
               "", UVM_LOW)
     
-    if(!uvm_config_db#(vip_vif)::
-       exists(null, get_full_name(), "vip_vif"))
+    if(!uvm_config_db#(vip_agent_config)::
+       get(null, get_full_name(), "config", m_config))
       begin
         `uvm_error($sformatf("%s", this.get_name()), 
-                   "vip_vif does not exist in config db")
-      end
-    else
-      begin
-        `uvm_info($sformatf("%s", this.get_name()), 
-                  "vip_vif exists in db", UVM_LOW)
-      end        
+                   "agent_config does not exist in config db")
+      end      
+    
+    uvm_config_db#(vip_vif)::set(this, "driver", "vif", m_config.vif);
     
     driver = vip_driver::type_id::create("driver", this);
     seqr = vip_sequencer::type_id::create("seqr", this);
+    
   endfunction
   
   // connect phase
@@ -252,16 +272,18 @@ endclass
 // env class
 class vip_env extends uvm_env;
   
-  // configuration. Automation
-  
   // class members. Automation
   
   // macro for factory registeration and automation
   // of class members
   `uvm_component_utils(vip_env)
   
+  // configuration. No automation
+  vip_env_config m_config;
+  
   // env's components. No automation
   vip_agent agent;
+  vip_agent_config agent_config;
     
   // constructor
   function new (string name, uvm_component parent);
@@ -271,12 +293,29 @@ class vip_env extends uvm_env;
   // build phase
   virtual function void build_phase (uvm_phase phase);
     super.build_phase(phase);
+    if(!uvm_config_db#(vip_env_config)::get(this, "", "config", m_config))
+      begin
+        `uvm_error(this.get_name(), "Config not found in db")      
+      end
+    agent_config = new("agent_config");
+    if (!agent_config.randomize())
+      begin
+        `uvm_error(this.get_name(), 
+                   $sformatf("Randomization of %S failed", agent_config.get_name()))
+      end
+    agent_config.vif = m_config.vif;
+    uvm_config_db#(vip_agent_config)::set(this,"agent", "config", agent_config);
     agent = vip_agent::type_id::create("agent", this);
   endfunction
   
   // connect phase
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+  endfunction
+  
+  // start of simulation
+  function void start_of_simulation_phase(uvm_phase phase);
+    check_config_usage();  
   endfunction
   
   // all dropped with drain time
@@ -293,7 +332,7 @@ class vip_env extends uvm_env;
         `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
                   $sformatf("get_objection_total=%0d", 
                             objection.get_objection_total), UVM_LOW) 
-        repeat(15);
+        //repeat(15);
       end
   endtask
   
