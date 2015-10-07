@@ -141,8 +141,9 @@ endclass
     
     task vip_tb::reset_reg_model();
       fork
-        @(negedge env_config.vif.reset) `uvm_info($sformatf("%s", this.get_name()), 
-                    "Negedge of reset received", UVM_LOW)
+        @(negedge this.env_config.vif.reset) 
+        `uvm_info($sformatf("%s", this.get_name()), 
+                  "Negedge of reset received", UVM_LOW)
         reg_model.reset();
       join
       
