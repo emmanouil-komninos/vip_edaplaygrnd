@@ -135,20 +135,23 @@ class vip_reset_mon extends uvm_monitor;
   
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
-    //forever
+    forever
       begin
-        @(negedge vif.reset);
-        `uvm_info($sformatf("%s", this.get_name()), "Reset dropped", UVM_LOW)
+        fork
+          begin
+            @(negedge vif.reset);
+            `uvm_info($sformatf("%s", this.get_name()), "Reset dropped", UVM_LOW)
+          end
+          begin
+            @(posedge vif.reset);
+            `uvm_info($sformatf("%s", this.get_name()), "Reset raised", UVM_LOW)
+          end
+        join_any
+        disable fork;
       end
-    //forever
-      begin
-        @(posedge vif.reset);
-        `uvm_info($sformatf("%s", this.get_name()), "Reset raised", UVM_LOW)
-      end
-    join_none
   endtask
 endclass
+
 
 
 // driver class
@@ -225,7 +228,7 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
                                   this.get_name(), phase.get_name()));
               end
           end
-        join_any;
+        join_any
         disable fork;
         if (req!= null)
           begin
@@ -376,3 +379,4 @@ class vip_env extends uvm_env;
   endtask
   
 endclass
+          
