@@ -84,7 +84,6 @@ endclass
 
 
 // configuration classes
-
 class vip_agent_config extends uvm_object;
   vip_vif vif;
   function new (string name = "vip_agent_config");
@@ -111,6 +110,44 @@ class vip_sequencer extends uvm_sequencer #(vip_base_seq_item);
     super.new(name, parent);
   endfunction
   
+endclass
+
+
+// reset monitor
+class vip_reset_mon extends uvm_monitor;
+  
+  `uvm_component_utils(vip_reset_mon)
+  
+  vip_vif vif;
+  
+  function new (string name = "vip_reset_mon", uvm_component parent);
+    super.new(name, parent);
+  endfunction
+  
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    if(!uvm_config_db#(vip_vif)::get(null,get_full_name(),"vif", vif))
+      begin
+        `uvm_error($sformatf("%s: connect_phase", this.get_name()),
+                   "vip_vif get from config_db failed")
+      end
+  endfunction
+  
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    fork
+    //forever
+      begin
+        @(negedge vif.reset);
+        `uvm_info($sformatf("%s", this.get_name()), "Reset dropped", UVM_LOW)
+      end
+    //forever
+      begin
+        @(posedge vif.reset);
+        `uvm_info($sformatf("%s", this.get_name()), "Reset raised", UVM_LOW)
+      end
+    join_none
+  endtask
 endclass
 
 
@@ -159,10 +196,13 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
         reset();
         fork
           @(posedge vif.reset) `uvm_info($sformatf("%s", this.get_name()), 
-                    "Posedge of reset received", UVM_LOW)
+                                         "Posedge of reset received", UVM_LOW)
           begin
             forever
               begin           
+                
+                `uvm_info($sformatf("%s", this.get_name()), "", UVM_LOW);
+                
                 @(this.vif.vip_tb_mod.tb_ck iff(!this.vif.reset));
                 
                 `uvm_info($sformatf("%s", this.get_name()), 
@@ -185,17 +225,16 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
                                   this.get_name(), phase.get_name()));
               end
           end
-        join_any
+        join_any;
         disable fork;
-          if (req!= null)
-            begin
-              `uvm_info($sformatf("%s", this.get_name()), 
-                    "Request is not null", UVM_LOW)              
-            end
+        if (req!= null)
+          begin
+            `uvm_info($sformatf("%s", this.get_name()), 
+                      "Request is not null", UVM_LOW)              
+          end
       end
   endtask
-        
-  
+          
   // virtual functions to drive pins
   virtual task get_and_drive();
     `uvm_info($sformatf("%s",this.get_name()), "in get_and_drive", UVM_LOW)
@@ -214,9 +253,6 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   endtask
 endclass
 
-
-
-
 // agent class
 class vip_agent extends uvm_agent;
 
@@ -230,6 +266,7 @@ class vip_agent extends uvm_agent;
   // agent's components. No automation
   vip_driver driver;
   vip_sequencer seqr;
+  vip_reset_mon reset_mon;
   
   // constructor
   function new (string name, uvm_component parent);
@@ -252,9 +289,11 @@ class vip_agent extends uvm_agent;
       end      
     
     uvm_config_db#(vip_vif)::set(this, "driver", "vif", m_config.vif);
+    uvm_config_db#(vip_vif)::set(this, "reset_mon", "vif", m_config.vif);
     
     driver = vip_driver::type_id::create("driver", this);
     seqr = vip_sequencer::type_id::create("seqr", this);
+    reset_mon = vip_reset_mon::type_id::create("reset_mon", this);
     
   endfunction
   
