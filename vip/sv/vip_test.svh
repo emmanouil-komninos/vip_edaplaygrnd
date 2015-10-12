@@ -217,7 +217,7 @@ class simple_test extends vip_base_test;
     // start it on the sequencer
     base_sequence.start(tb.env.agent.seqr);
 
-    //#20 phase.drop_objection(this, "test is dropping the objection");
+    //phase.drop_objection(this, "test is dropping the objection");
   endtask
   
 endclass
@@ -249,8 +249,6 @@ class vseq_base_test extends vip_base_test;
   
   // run phase
   virtual task run_phase(uvm_phase phase);
-    
-    //phase.raise_objection(this, "test is raising an ojection");
      
     // create the vsequence.
     vseq = base_vseq::type_id::create("vseq");
@@ -262,8 +260,6 @@ class vseq_base_test extends vip_base_test;
     // explicit de-activation of calls to task pre/post body
     // vseq.start(tb.vseqr, null, -1, 0);
     vseq.start(tb.vseqr);    
-    
-    //#20 phase.drop_objection(this, "test is dropping the objection");
     
   endtask
   
