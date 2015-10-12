@@ -31,7 +31,12 @@ class base_vseq extends uvm_virtual_sequence;
     uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
     if (starting_phase != null)
       begin
-        starting_phase.raise_objection(this, "Started vseq");
+        if (this.get_automatic_phase_objection() == 0)
+          begin
+            starting_phase.raise_objection(this, "Started vseq");
+            `uvm_info($sformatf("%s", this.get_name()), 
+                      "Raised objection in pre_body", UVM_LOW)
+          end
       end
   endtask
   
@@ -42,7 +47,12 @@ class base_vseq extends uvm_virtual_sequence;
     uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
     if (starting_phase != null)
       begin
-        starting_phase.drop_objection(this, "Completed vseq");
+        if (this.get_automatic_phase_objection() == 0)
+          begin
+            starting_phase.drop_objection(this, "Completed vseq");
+            `uvm_info($sformatf("%s", this.get_name()), 
+                      "Dropped objection in post_body", UVM_LOW)
+          end
       end
   endtask
    
