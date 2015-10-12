@@ -78,6 +78,39 @@ class vip_base_sequence extends uvm_sequence #(vip_base_seq_item);
   function new (string name = "vip_base_sequence");
     super.new(name);
   endfunction
+    
+  virtual task pre_body();
+  	// for the following to take effect the (base_vseq 1_seq) 
+    // 1_seq.set_starting_phase() should be called 
+    // prior to 1_seq.start(..)
+    uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
+    if (starting_phase != null)
+      begin
+        if (this.get_automatic_phase_objection() == 0)
+          begin
+            starting_phase.raise_objection(this, "Started vseq");
+            `uvm_info($sformatf("%s", this.get_name()), 
+                      "Raised objection in pre_body", UVM_LOW)
+          end
+      end
+  endtask
+  
+  virtual task post_body();
+  	// for the following to take effect the (base_vseq 1_seq) 
+    // 1_seq.set_starting_phase() should be called 
+    // prior to 1_seq.start(..) 
+    uvm_phase starting_phase = get_starting_phase(); // uvm-1.2
+    if (starting_phase != null)
+      begin
+        if (this.get_automatic_phase_objection() == 0)
+          begin
+            starting_phase.drop_objection(this, "Completed vseq");
+            `uvm_info($sformatf("%s", this.get_name()), 
+                      "Dropped objection in post_body", UVM_LOW)
+          end
+      end
+  endtask
+
   
 endclass
 
@@ -203,8 +236,6 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
           begin
             forever
               begin           
-                
-                `uvm_info($sformatf("%s", this.get_name()), "", UVM_LOW);
                 
                 @(this.vif.vip_tb_mod.tb_ck iff(!this.vif.reset));
                 
@@ -361,22 +392,22 @@ class vip_env extends uvm_env;
   endfunction
   
   // all dropped with drain time
-  task all_dropped (uvm_objection objection, uvm_object source_obj, 
-                    string description, int count);
+  //task all_dropped (uvm_objection objection, uvm_object source_obj, 
+                    //string description, int count);
 
-    if (objection == uvm_test_done)
-      begin
-        `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
-                  "objection == uvm_test_done",UVM_LOW)
-        `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
-                  $sformatf("get_objection_count=%0d",
-                            objection.get_objection_count(this)), UVM_LOW)
-        `uvm_info($sformatf("%s: all_dropped", this.get_name()), 
-                  $sformatf("get_objection_total=%0d", 
-                            objection.get_objection_total), UVM_LOW) 
+    //if (objection == uvm_test_done)
+      //begin
+        //`uvm_info($sformatf("%s: all_dropped", this.get_name()), 
+          //        "objection == uvm_test_done",UVM_LOW)
+        //`uvm_info($sformatf("%s: all_dropped", this.get_name()), 
+            //      $sformatf("get_objection_count=%0d",
+                            //objection.get_objection_count(this)), UVM_LOW)
+        //`uvm_info($sformatf("%s: all_dropped", this.get_name()), 
+              //    $sformatf("get_objection_total=%0d", 
+                //            objection.get_objection_total), UVM_LOW) 
         //repeat(15);
-      end
-  endtask
+      //end
+  //endtask
   
 endclass
           
