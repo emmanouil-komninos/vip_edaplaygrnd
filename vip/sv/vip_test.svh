@@ -10,7 +10,7 @@ class vip_simple_sequence extends vip_base_sequence;
     
   virtual task body();
     `uvm_info("VIP_SIMPLE_SEQUENCE", "Running", UVM_LOW)
-    repeat(70)
+    repeat(1)
       begin
         `uvm_do_with(req, {req.op_code inside {[1:2]};})  
       end
@@ -197,6 +197,7 @@ class simple_test extends vip_base_test;
   
   // run phase
   virtual task run_phase(uvm_phase phase);
+    
     //phase.raise_objection(this, "test is raising an ojection");
     
     // find the sequencer
@@ -209,6 +210,9 @@ class simple_test extends vip_base_test;
     
     // call the following to enable starting_phase.raise/drop_objection(..)
     base_sequence.set_starting_phase(phase); // uvm-1.2
+    
+    // stop the propagation of the objection through the hierarchy
+    base_sequence.get_starting_phase().get_objection().set_propagate_mode(0);
     
     // start it on the sequencer
     base_sequence.start(tb.env.agent.seqr);
