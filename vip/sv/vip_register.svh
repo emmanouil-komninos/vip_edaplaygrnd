@@ -29,7 +29,10 @@ class ctrl_reg_c extends uvm_reg;
     data = uvm_reg_field::type_id::create("data");
     data.configure(this, 16, 16, "RW", 0, 'hffff, 1, 1, 1);
     
-    add_hdl_path_slice("ctrl", 0, 32);
+    add_hdl_path_slice("ctrl", 0, 32); // kind = RTL by default
+    
+    // define kind = GATES to differantiate from rtl
+    add_hdl_path_slice("ctrl_dff.q", 0, 32, "GATES"); 
 
   endfunction
   
@@ -100,6 +103,7 @@ class vip_reg_model_c extends uvm_reg_block;
     
     //add_hdl_path(.path("tb_top.dut"));
     add_hdl_path(.path("tb_top"));
+    add_hdl_path(.path("tb_top"), .kind("GATES"));
 
     this.lock_model();
     default_map.set_check_on_read();
