@@ -41,12 +41,14 @@ class vip_simple_reg_seq extends base_reg_seq;
     #50ns;
     
     // backdoor write
-    poke_reg(reg_model.vip_rf.ctrl, status, 'h12345);
+    poke_reg(.rg(reg_model.vip_rf.ctrl), .status(status), 
+             .value('h12345), .kind("RTL"));
     
     #50ns;
     
     // backdoor read
-    peek_reg(reg_model.vip_rf.ctrl, status, rd_val );
+    peek_reg(.rg(reg_model.vip_rf.ctrl), .status(status), 
+             .value(rd_val), .kind("RTL"));
     assert(rd_val == 'h12345);
     
     reg_model.vip_rf.ctrl.print();
@@ -212,7 +214,7 @@ class simple_test extends vip_base_test;
     base_sequence.set_starting_phase(phase); // uvm-1.2
     
     // stop the propagation of the objection through the hierarchy
-    base_sequence.get_starting_phase().get_objection().set_propagate_mode(0);
+    //base_sequence.get_starting_phase().get_objection().set_propagate_mode(0);
     
     // start it on the sequencer
     base_sequence.start(tb.env.agent.seqr);
@@ -280,11 +282,11 @@ class vseq_simple_test extends vseq_base_test;
     set_type_override_by_type(vip_base_sequence::get_type(), 
                             vip_simple_sequence::get_type());
     // run the simple_vseq
-    set_type_override_by_type(base_vseq::get_type(), 
-                              simple_vseq::get_type());
-    // run the simple_reg_vseq
     //set_type_override_by_type(base_vseq::get_type(), 
-      //                        simple_reg_vseq::get_type());    
+                              //simple_vseq::get_type());
+    // run the simple_reg_vseq
+    set_type_override_by_type(base_vseq::get_type(), 
+                              simple_reg_vseq::get_type());    
   endfunction
   
 endclass
