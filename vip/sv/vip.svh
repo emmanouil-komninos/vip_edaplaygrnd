@@ -272,6 +272,7 @@ class vip_driver extends uvm_driver #(vip_base_seq_item);
   // virtual functions to drive pins
   virtual task get_and_drive();
     `uvm_info($sformatf("%s",this.get_name()), "in get_and_drive", UVM_LOW)
+    req.print();
     this.vif.vip_tb_mod.tb_ck.enable <= 1;
     this.vif.vip_tb_mod.tb_ck.op_code <= req.op_code;
     this.vif.vip_tb_mod.tb_ck.data <= req.data;
