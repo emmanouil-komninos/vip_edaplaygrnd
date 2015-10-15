@@ -1,10 +1,11 @@
-interface design_if (input bit clk);
-  	
+interface design_if (input bit clk, input bit reset);
+  bit enable;
   logic [7:0] op_code;
   logic [7:0] address;
   logic [15:0] data;
     
   clocking tb_ck @(posedge clk);
+    output enable;
     output op_code;
     output address;
     output data;
