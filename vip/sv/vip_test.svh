@@ -157,7 +157,6 @@ class vip_base_test extends uvm_test;
                   $sformatf("get_objection_total=%0d",
                             objection.get_objection_total), 
                   UVM_LOW)
-        repeat(3) @(this.tb.env.m_config.vif.vip_tb_mod.tb_ck);
       end
   endtask
     
