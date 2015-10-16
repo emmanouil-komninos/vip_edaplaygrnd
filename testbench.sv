@@ -8,7 +8,7 @@ module tb_top;
   import vip_test_pkg::*;
   
   reg clk = 0;
-  reg reset;
+  reg reset =1;
   
   design_if dut_if(clk, reset);
   my_design dut(._if(dut_if)); 
@@ -21,13 +21,14 @@ module tb_top;
 
   initial
     begin
-      run_test("vseq_simple_test");
-      //run_test("simple_test");
+      //run_test("c_base_test");
+      //run_test("vseq_simple_test");
+      run_test("simple_test");
     end
   
+  //always
   initial
     begin
-      reset = 1;
       #100 reset = ~reset;
     end
   
